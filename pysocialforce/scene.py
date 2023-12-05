@@ -35,9 +35,9 @@ class PedState:
 
     @state.setter
     def state(self, state):
-        tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents
-        if state.shape[1] < 7:
-            self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1)
+        tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents (1stDim of state(ped init state list))
+        if state.shape[1] < 7: 
+            self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #dude axis=-1
         else:
             self._state = state
         if self.initial_speeds is None:
