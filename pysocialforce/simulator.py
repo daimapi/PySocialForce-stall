@@ -1,3 +1,5 @@
+"""Simulator"""
+
 # coding=utf-8
 
 """Synthetic pedestrian behavior with social groups simulation according to the Extended Social Force model.
@@ -14,7 +16,7 @@ class Simulator:
 
     ...
 
-    Attributes
+    Attributes (定義)
     ----------
     state : np.ndarray [n, 6] or [n, 7]
        Each entry represents a pedestrian state, (x, y, v_x, v_y, d_x, d_y, [tau])
@@ -38,16 +40,18 @@ class Simulator:
     """
 
     def __init__(self, state, groups=None, obstacles=None, config_file=None):
+        
         self.config = DefaultConfig()
         if config_file:
-            self.config.load_config(config_file)
+            self.config.load_config(config_file) # load config_file 
+        
         # TODO: load obstacles from config
         self.scene_config = self.config.sub_config("scene")
         # initiate obstacles
-        self.env = EnvState(obstacles, self.config("resolution", 10.0))
+        self.env = EnvState(obstacles, self.config("resolution", 10.0))   # env = environment 11/11
 
         # initiate agents
-        self.peds = PedState(state, groups, self.config)
+        self.peds = PedState(state, groups, self.config) # 11/14
 
         # construct forces
         self.forces = self.make_forces(self.config)
@@ -71,7 +75,7 @@ class Simulator:
 
         # initiate forces
         for force in force_list:
-            force.init(self, force_configs)
+            force.init(self, force_configs)  # more details in config.py
 
         return force_list
 

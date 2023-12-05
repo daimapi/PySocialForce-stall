@@ -1,4 +1,5 @@
-"""Config"""
+"""Config and DefaultConfig"""
+
 from pathlib import Path
 from typing import Dict
 import toml
@@ -17,7 +18,7 @@ class Config:
     sub_config: return a sub dict wrapped in Config()
     """
 
-    def __init__(self, config=None) -> None:
+    def __init__(self, config=None) -> None: # return type == none
         self.config = {}
         if config:
             self.config = config
@@ -38,8 +39,8 @@ class Config:
             return Config(sub_dict)
         return Config()
 
-    def __call__(self, entry: str, default=None):
-        return self.config.get(entry) or default
+    def __call__(self, entry: str, default=None): #LET Config.__call__("entry", default) == Config("entry", default)
+        return self.config.get(entry) or default #what is get dude
 
 
 class DefaultConfig(Config):

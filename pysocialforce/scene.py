@@ -1,3 +1,5 @@
+"""PedState and EnvState"""
+
 """This module tracks the state odf scene and scen elements like pedestrians, groups and obstacles"""
 from typing import List
 
@@ -10,7 +12,7 @@ class PedState:
     """Tracks the state of pedstrains and social groups"""
 
     def __init__(self, state, groups, config):
-        self.default_tau = config("tau", 0.5)
+        self.default_tau = config("tau", 0.5) #dude
         self.step_width = config("step_width", 0.4)
         self.agent_radius = config("agent_radius", 0.35)
         self.max_speed_multiplier = config("max_speed_multiplier", 1.3)
@@ -33,7 +35,7 @@ class PedState:
 
     @state.setter
     def state(self, state):
-        tau = self.default_tau * np.ones(state.shape[0])
+        tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents
         if state.shape[1] < 7:
             self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1)
         else:
@@ -71,7 +73,7 @@ class PedState:
         desired_velocity = self.vel() + self.step_width * force
         desired_velocity = self.capped_velocity(desired_velocity, self.max_speeds)
         # stop when arrived
-        desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0]
+        desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0] #core dude
 
         # update state
         next_state = self.state
@@ -79,7 +81,7 @@ class PedState:
         next_state[:, 2:4] = desired_velocity
         next_groups = self.groups
         if groups is not None:
-            next_groups = groups
+            next_groups = groups 
         self.update(next_state, next_groups)
 
     # def initial_speeds(self):
@@ -127,25 +129,25 @@ class EnvState:
 
     def __init__(self, obstacles, resolution=10):
         self.resolution = resolution
-        self.obstacles = obstacles
+        self.obstacles = obstacles #list
 
-    @property
-    def obstacles(self) -> List[np.ndarray]:
+    @property # while loading: "print(EnvState.obstacles)" or "??? = EnvState.obstacles"
+    def obstacles(self) -> List[np.ndarray]:  # a type
         """obstacles is a list of np.ndarray"""
-        return self._obstacles
+        return self._obstacles #line132
 
     @obstacles.setter
-    def obstacles(self, obstacles):
+    def obstacles(self, obstacles): # while loading: "Envstate.obstacles = ?obstacles?"
         """Input an list of (startx, endx, starty, endy) as start and end of a line"""
         if obstacles is None:
             self._obstacles = []
         else:
             self._obstacles = []
-            for startx, endx, starty, endy in obstacles:
-                samples = int(np.linalg.norm((startx - endx, starty - endy)) * self.resolution)
+            for startx, endx, starty, endy in obstacles: #one time one obs-(a straight line)
+                samples = int(np.linalg.norm((startx - endx, starty - endy)) * self.resolution) # int({sqroot[(deltaX)^2+(deltaY)^2] -> float}* resolution) -> int
                 line = np.array(
                     list(
-                        zip(np.linspace(startx, endx, samples), np.linspace(starty, endy, samples))
+                        zip(np.linspace(startx, endx, samples), np.linspace(starty, endy, samples)) #see my picture in note  np.linspace(a,b,c) means draw c dots from a to b (both included) | zip(a,b) means mix a=[1,2,3] and b=[4,5,6] into ([1,4],[2,5],[3,6])
                     )
-                )
-                self._obstacles.append(line)
+                ) #turn ([1,4],[2,5],[3,6]) into [[1,4],[2,5],[3,6]]
+                self._obstacles.append(line) #add this obs-(a straight line)([[1,4],[2,5],[3,6]]) to Envstate.obstacles
