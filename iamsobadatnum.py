@@ -9,6 +9,7 @@ state = np.array(
             [3.0, 0.0, 0.0, 0.5, 4.0, 10.0],
         ]
     )
-tau = 10 * np.ones(state.shape[0])
-bruh = numpy.concatenate((state, npexxpand_dims(tau, -1)), axis=-1)
+tau = 5 * np.ones(state.shape[0])
+bruh = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1)
 print(bruh)
+print(tau)
