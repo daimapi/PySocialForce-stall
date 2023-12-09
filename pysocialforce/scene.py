@@ -37,7 +37,7 @@ class PedState:
     def state(self, state):
         tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents (1stDim of state(ped init state list))
         if state.shape[1] < 7: #num of elements in each agents < 7
-            self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #add deftau in back of each agents
+            self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #add deftau in back of each agents (no.7)
         else:
             self._state = state
         if self.initial_speeds is None:
@@ -59,9 +59,12 @@ class PedState:
 
     def goal(self) -> np.ndarray:
         return self.state[:, 4:6]
+    
+    def goal2(self) -> np.ndarray:
+        return self.state[:, 6:8]
 
     def tau(self):
-        return self.state[:, 6:7]
+        return self.state[:, 8:9]
 
     def speeds(self):
         """Return the speeds corresponding to a given state."""
@@ -73,7 +76,14 @@ class PedState:
         desired_velocity = self.vel() + self.step_width * force
         desired_velocity = self.capped_velocity(desired_velocity, self.max_speeds)
         # stop when arrived
-        desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0] #core dude
+        arrived_mask = stateutils.desired_directions(self.state)[1] < 0.5
+        desired_velocity[arrived_mask] = [0, 0] #core dude
+        self.state[:, 0:2][arrived_mask] = self.state[:, 4:6][arrived_mask]
+        self.state[:, 4:6][arrived_mask] = self.state[:, 6:8][arrived_mask]
+        
+        #if (stateutils.desired_directions(self.state)[1] < 0.5) : get fucked
+        #    self.state[:, 0:2] = self.state[:, 4:6]
+        #    self.state[:, 4:6] = self.state[:, 6:8]
 
         # update state
         next_state = self.state

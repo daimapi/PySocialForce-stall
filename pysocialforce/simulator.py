@@ -19,7 +19,7 @@ class Simulator:
     Attributes (定義)
     ----------
     state : np.ndarray [n, 6] or [n, 7]
-       Each entry represents a pedestrian state, (x, y, v_x, v_y, d_x, d_y, [tau])
+       Each entry represents a pedestrian state, (x, y, v_x, v_y, d_x, d_y, d2_x, d2_y, [tau])
     obstacles : np.ndarray
         Environmental obstacles
     groups : List of Lists
