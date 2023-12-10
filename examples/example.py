@@ -6,15 +6,15 @@ import pysocialforce as psf
 
 if __name__ == "__main__":
     # initial states, each entry is the position, velocity and goal of a pedestrian in the form of 
-    #[px, py, vx, vy, gx, gy, gx2, gy2]
+    #[px, py, vx, vy, gx, gy, gt, gx2, gy2]
     initial_state = np.array(
         [
-            [0.0, 10, -0.5, -0.5, 0.0, 0.0, 0.0, 10],
-            [0.5, 10, -0.5, -0.5, 0.5, 0.0, 0.5, 10],
-            [0.0, 0.0, 0.0, 0.5, 1.0, 10.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0, 0.5, 2.0, 10.0, 1.0, 0.0],
-            [2.0, 0.0, 0.0, 0.5, 3.0, 10.0, 2.0, 0.0],
-            [3.0, 0.0, 0.0, 0.5, 4.0, 10.0, 3.0, 0.0],
+            [0.0, 10, -0.5, -0.5, 0.0, 0.0, 3, 0.0, 10],
+            [0.5, 10, -0.5, -0.5, 0.5, 0.0, 3, 0.5, 10],
+            [0.0, 0.0, 0.0, 0.5, 1.0, 10.0, 3, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.5, 2.0, 10.0, 3, 1.0, 0.0],
+            [2.0, 0.0, 0.0, 0.5, 3.0, 10.0, 3, 2.0, 0.0],
+            [3.0, 0.0, 0.0, 0.5, 4.0, 10.0, 3, 3.0, 0.0],
         ]
     )
     #initial_state = np.array(
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # update n steps
     n = 80
     s.step(n) #no difference
-    name = "images/exmaple__agents=" + str(initial_state.shape[0]) + "_n=" + str(n)
+    name = "images/exmaple__agents=" + str(initial_state.shape[0]) + "_n=" + str(n) + ""
     with psf.plot.SceneVisualizer(s, name) as sv:
         sv.animate()
         # sv.plot()

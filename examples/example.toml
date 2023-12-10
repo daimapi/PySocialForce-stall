@@ -26,7 +26,8 @@ n = 2
 n_prime = 3
 
 [obstacle_force]
-factor = 10.0
+factor = 0.5
+#0.5 is better for us
 # the standard deviation of obstacle force
 sigma = 0.2
 # threshold to trigger this force

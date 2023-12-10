@@ -36,7 +36,7 @@ class PedState:
     @state.setter
     def state(self, state):
         tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents (1stDim of state(ped init state list))
-        if state.shape[1] < 7: #num of elements in each agents < 7
+        if state.shape[1] < 10: #num of elements in each agents < 10
             self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #add deftau in back of each agents (no.7)
         else:
             self._state = state
@@ -60,11 +60,14 @@ class PedState:
     def goal(self) -> np.ndarray:
         return self.state[:, 4:6]
     
+    def goal_t(self) -> np.ndarray:
+        return np.concatenate(self.state[:, 6:7], axis=None)
+    
     def goal2(self) -> np.ndarray:
-        return self.state[:, 6:8]
+        return self.state[:, 7:9]
 
     def tau(self):
-        return self.state[:, 8:9]
+        return self.state[:, 9:10]
 
     def speeds(self):
         """Return the speeds corresponding to a given state."""
@@ -76,10 +79,22 @@ class PedState:
         desired_velocity = self.vel() + self.step_width * force
         desired_velocity = self.capped_velocity(desired_velocity, self.max_speeds)
         # stop when arrived
-        arrived_mask = stateutils.desired_directions(self.state)[1] < 0.5
-        desired_velocity[arrived_mask] = [0, 0] #core dude
-        self.state[:, 0:2][arrived_mask] = self.state[:, 4:6][arrived_mask]
-        self.state[:, 4:6][arrived_mask] = self.state[:, 6:8][arrived_mask]
+        arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() <= 0)
+        arrived_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() > 0)
+        
+        #print(arrived_mask)
+        #print(self.state[:, 6:7][arrived_mask])
+        #print(np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
+        #print(np.shape(self.state[:, 6:7][arrived_mask]))
+
+        desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0] #core dude
+        
+        #if (np.shape(self.state[:, 6:7][arrived_mask]) != (0,1)):
+        self.state[:, 6:7][arrived_mask] = np.subtract(self.state[:, 6:7][arrived_mask], np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
+        
+        self.pos()[arrivedf_mask] = self.goal()[arrivedf_mask]
+        self.goal()[arrivedf_mask] = self.goal2()[arrivedf_mask]
+
         
         #if (stateutils.desired_directions(self.state)[1] < 0.5) : get fucked
         #    self.state[:, 0:2] = self.state[:, 4:6]
