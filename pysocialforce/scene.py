@@ -5,13 +5,14 @@ from typing import List
 
 import numpy as np
 
-from pysocialforce.utils import stateutils
+from pysocialforce.utils import stateutils, logger
 
 
 class PedState:
     """Tracks the state of pedstrains and social groups"""
 
     def __init__(self, state, groups, config):
+        logger.info("Pedstate init")
         self.default_tau = config("tau", 0.5) #dude
         self.step_width = config("step_width", 0.4)
         self.agent_radius = config("agent_radius", 0.35)
@@ -26,6 +27,7 @@ class PedState:
         self.update(state, groups)
 
     def update(self, state, groups):
+        logger.info("Pedstate updating")
         self.state = state
         self.groups = groups
 
@@ -35,6 +37,7 @@ class PedState:
 
     @state.setter
     def state(self, state):
+        # when someone type self(pedstate).state=...
         tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents (1stDim of state(ped init state list))
         if state.shape[1] < 10: #num of elements in each agents < 10
             self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #add deftau in back of each agents (no.7)
@@ -75,11 +78,12 @@ class PedState:
 
     def step(self, force, groups=None):
         """Move peds according to forces"""
+        logger.info("move peds a step by (the methond of pedstate).step")
         # desired velocity
         desired_velocity = self.vel() + self.step_width * force
         desired_velocity = self.capped_velocity(desired_velocity, self.max_speeds)
         # stop when arrived
-        arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() <= 0)
+        arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() == 0) #may fix turbo
         arrived_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() > 0)
         
         #print(arrived_mask)
@@ -87,7 +91,7 @@ class PedState:
         #print(np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
         #print(np.shape(self.state[:, 6:7][arrived_mask]))
 
-        desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0] #core dude
+        desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0]
         
         #if (np.shape(self.state[:, 6:7][arrived_mask]) != (0,1)):
         self.state[:, 6:7][arrived_mask] = np.subtract(self.state[:, 6:7][arrived_mask], np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
@@ -95,7 +99,7 @@ class PedState:
         self.pos()[arrivedf_mask] = self.goal()[arrivedf_mask]
         self.goal()[arrivedf_mask] = self.goal2()[arrivedf_mask]
 
-        
+
         #if (stateutils.desired_directions(self.state)[1] < 0.5) : get fucked
         #    self.state[:, 0:2] = self.state[:, 4:6]
         #    self.state[:, 4:6] = self.state[:, 6:8]
@@ -153,6 +157,7 @@ class EnvState:
     """State of the environment obstacles"""
 
     def __init__(self, obstacles, resolution=10):
+        logger.info("Envstate init")
         self.resolution = resolution
         self.obstacles = obstacles #list
 

@@ -6,10 +6,9 @@
 
 See Helbing and Molnár 1998 and Moussaïd et al. 2010
 """
-from pysocialforce.utils import DefaultConfig
+from pysocialforce.utils import DefaultConfig, logger
 from pysocialforce.scene import PedState, EnvState
 from pysocialforce import forces
-
 
 class Simulator:
     """Simulate social force model.
@@ -41,6 +40,7 @@ class Simulator:
 
     def __init__(self, state, groups=None, obstacles=None, config_file=None):
         
+        logger.info("simulator init")
         self.config = DefaultConfig()
         if config_file:
             self.config.load_config(config_file) # load config_file 
@@ -55,9 +55,11 @@ class Simulator:
 
         # construct forces
         self.forces = self.make_forces(self.config)
+        logger.info("simulator end init")
 
     def make_forces(self, force_configs):
         """Construct forces"""
+        logger.info("making force (init)")
         force_list = [
             forces.DesiredForce(),
             forces.SocialForce(),
@@ -76,11 +78,15 @@ class Simulator:
         # initiate forces
         for force in force_list:
             force.init(self, force_configs)  # more details in config.py
+        
+        logger.info("done force:")
+        logger.info(force_list)
 
         return force_list
 
     def compute_forces(self):
         """compute forces"""
+        logger.info("start compute_forces --> get_force and sum up all force")
         return sum(map(lambda x: x.get_force(), self.forces))
 
     def get_states(self):
@@ -96,10 +102,13 @@ class Simulator:
 
     def step_once(self):
         """step once"""
+        logger.info("step once")
         self.peds.step(self.compute_forces())
 
     def step(self, n=1):
         """Step n time"""
         for _ in range(n):
+            logger.info('steping {n}')
             self.step_once()
+        logger.info('finish caculation')
         return self

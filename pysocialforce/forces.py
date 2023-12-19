@@ -27,6 +27,7 @@ class Force(ABC):
 
     def init(self, scene, config):
         """Load config and scene"""
+        logger.info("loding scene into Force")
         # load the sub field corresponding to the force name from global confgi file
         self.config = config.sub_config(camel_to_snake(type(self).__name__))
         if self.config:
@@ -42,7 +43,7 @@ class Force(ABC):
         """
         raise NotImplementedError
 
-    def get_force(self, debug=False):
+    def get_force(self, debug=True):
         force = self._get_force()
         if debug:
             logger.debug(f"{camel_to_snake(type(self).__name__)}:\n {repr(force)}")
@@ -245,6 +246,7 @@ class DesiredForce(Force):
         )[dist > goal_threshold, :]
         force[dist <= goal_threshold] = -1.0 * vel[dist <= goal_threshold]
         force /= relexation_time
+        logger.info("desired force gets calculated")
         return force * self.factor
 
 
@@ -291,9 +293,10 @@ class SocialForce(Force):
 
         force = force_velocity + force_angle  # n*(n-1) x 2
         force = np.sum(force.reshape((self.peds.size(), -1, 2)), axis=1)
+        logger.info("social force gets calculated")
         return force * self.factor
 
-
+#dude
 class ObstacleForce(Force):
     """Calculates the force between this agent and the nearest obstacle in this
     scene.
