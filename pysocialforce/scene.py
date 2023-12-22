@@ -79,41 +79,42 @@ class PedState:
     def step(self, force, groups=None):
         """Move peds according to forces"""
         logger.info("move peds a step by (the methond of pedstate).step")
-        # desired velocity
+        ###desired velocity
         desired_velocity = self.vel() + self.step_width * force
         desired_velocity = self.capped_velocity(desired_velocity, self.max_speeds)
-        # stop when arrived
-
+        ###stop when arrived
         logger.debug("unmod desired vel :")
         logger.debug(desired_velocity)
-
+        
         arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() == 0) #may fix turbo
         arrived_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() > 0)
-        
+        logger.debug("agents dist tar")
+        logger.debug(stateutils.desired_directions(self.state)[1])
+        logger.debug("t:")
+        logger.debug(self.goal_t())
         #print(arrived_mask)
         #print(self.state[:, 6:7][arrived_mask])
         #print(np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
         #print(np.shape(self.state[:, 6:7][arrived_mask]))
-
         desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0]
-        
         #if (np.shape(self.state[:, 6:7][arrived_mask]) != (0,1)):
         self.state[:, 6:7][arrived_mask] = np.subtract(self.state[:, 6:7][arrived_mask], np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
-        
-        self.pos()[arrivedf_mask] = self.goal()[arrivedf_mask]
-        self.goal()[arrivedf_mask] = self.goal2()[arrivedf_mask]
-
         logger.debug("moded desired vel :")
         logger.debug(desired_velocity)
-
+        self.goal()[arrivedf_mask] = self.goal2()[arrivedf_mask]###dont (need) to change pos
         #if (stateutils.desired_directions(self.state)[1] < 0.5) : get fucked
-        #    self.state[:, 0:2] = self.state[:, 4:6]
+        #    self.state[:, 0:2] = self.state[:, 4:6] ###dont change this
         #    self.state[:, 4:6] = self.state[:, 6:8]
-
-        # update state
+        ###update state
         next_state = self.state
+        logger.debug("self_state-pos:")
+        logger.debug(next_state[:, 0:2])
         next_state[:, 0:2] += desired_velocity * self.step_width
+        logger.debug("next_state-pos:")
+        logger.debug(next_state[:, 0:2])
         next_state[:, 2:4] = desired_velocity
+        logger.debug("next_state-vel:")
+        logger.debug(next_state[:,2:4])
         next_groups = self.groups
         if groups is not None:
             next_groups = groups 
