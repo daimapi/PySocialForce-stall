@@ -83,6 +83,10 @@ class PedState:
         desired_velocity = self.vel() + self.step_width * force
         desired_velocity = self.capped_velocity(desired_velocity, self.max_speeds)
         # stop when arrived
+
+        logger.debug("unmod desired vel :")
+        logger.debug(desired_velocity)
+
         arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() == 0) #may fix turbo
         arrived_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() > 0)
         
@@ -99,6 +103,8 @@ class PedState:
         self.pos()[arrivedf_mask] = self.goal()[arrivedf_mask]
         self.goal()[arrivedf_mask] = self.goal2()[arrivedf_mask]
 
+        logger.debug("moded desired vel :")
+        logger.debug(desired_velocity)
 
         #if (stateutils.desired_directions(self.state)[1] < 0.5) : get fucked
         #    self.state[:, 0:2] = self.state[:, 4:6]

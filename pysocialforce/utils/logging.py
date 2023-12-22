@@ -11,8 +11,8 @@ FORMAT = "%(levelname)s:[%(filename)s:%(lineno)s %(funcName)20s() ] %(message)s"
 # Create handlers
 c_handler = logging.StreamHandler()
 f_handler = logging.FileHandler("file.log")
-c_handler.setLevel(logging.DEBUG)
-f_handler.setLevel(logging.WARNING)
+c_handler.setLevel(logging.INFO)
+f_handler.setLevel(logging.DEBUG)
 
 # Create formatters and add it to handlers
 c_format = logging.Formatter(FORMAT)

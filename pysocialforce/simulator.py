@@ -80,7 +80,7 @@ class Simulator:
             force.init(self, force_configs)  # more details in config.py
         
         logger.info("done force:")
-        logger.info(force_list)
+        #logger.info(force_list)
 
         return force_list
 
@@ -108,7 +108,7 @@ class Simulator:
     def step(self, n=1):
         """Step n time"""
         for _ in range(n):
-            logger.info('steping {n}')
+            logger.info('steping' + str(_))
             self.step_once()
         logger.info('finish caculation')
         return self
