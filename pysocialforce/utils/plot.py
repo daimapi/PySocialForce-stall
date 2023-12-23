@@ -142,8 +142,16 @@ class SceneVisualizer:
         # x, y limit from states, only for animation
         margin = 2.0
         xy_limits = np.array(
-            [minmax(state) for state in self.states]
+            [minmax(state) for state in self.states] +
+            [minmax(obs) for obs in self.scene.get_obstacles()]
         )  # (x_min, y_min, x_max, y_max)
+        #logger.debug(f"xy_limits:{xy_limits}")
+        #for s in self.scene.get_obstacles():
+        #    #logger.debug(f"minmax(s):{minmax(s)}")
+        #    xy_limits = np.concatenate(
+        #        (xy_limits
+        #            ,np.array([minmax(s)]))
+        #        , axis=0)
         xy_min = np.min(xy_limits[:, :2], axis=0) - margin
         xy_max = np.max(xy_limits[:, 2:4], axis=0) + margin
         self.ax.set(xlim=(xy_min[0], xy_max[0]), ylim=(xy_min[1], xy_max[1]))

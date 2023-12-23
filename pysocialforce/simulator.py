@@ -108,7 +108,7 @@ class Simulator:
     def step(self, n=1):
         """Step n time"""
         for _ in range(n):
-            logger.info('steping' + str(_))
+            logger.info(f"steping:{_}")
             self.step_once()
         logger.info('finish caculation')
         return self

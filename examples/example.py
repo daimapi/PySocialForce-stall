@@ -24,11 +24,11 @@ if __name__ == "__main__":
     #    ]
     #)
     # social groups informoation is represented as lists of indices of the state array)
-    # list of linear obstacles given in the form of (x_min, x_max, y_min, y_max)
     groups = [[1],[2],[3],[4],[5],[0]] #分組機制(依 initial_state 之 array 行數
     #groups = [[0]]
+    # list of linear obstacles given in the form of (x_min, x_max, y_min, y_max)
     # obs = [[-1, -1, -1, 11], [3, 3, -1, 11]]
-    obs = [[1, 2, 7, 8]]
+    obs = [[1, 2, 7, 8], [3, 3, -1, 11]]
     # obs = None
     # initiate the simulator,
     s = psf.Simulator(
