@@ -1,3 +1,20 @@
+# PySocialForce-stall
+still in proccess
+i have no time making description
+- [x] multi goal (goal*2)
+- [x] goal stay time (goal2)
+- [x] logger
+- [x] multi goal turbo problem
+- [x] keep obs in figure
+- [ ] plotting crowd situation
+- [ ] goal stay time (goal1)
+- [ ] multi goal (goal*n)
+- [ ] plot arrive time
+- [ ] different agents spawn time
+- [ ] agents genernater
+- [ ] input obstacles from bitmap 
+
+
 # PySocialForce
 
 master: [![Build Status](https://travis-ci.com/yuxiang-gao/PySocialForce.svg?branch=master)](https://travis-ci.com/yuxiang-gao/PySocialForce)
