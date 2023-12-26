@@ -38,7 +38,7 @@ class Simulator:
         Make one step
     """
 
-    def __init__(self, state, groups=None, obstacles=None, config_file=None):
+    def __init__(self, state, goals, groups=None, obstacles=None, config_file=None):
         
         logger.info("simulator init")
         self.config = DefaultConfig()
@@ -51,7 +51,7 @@ class Simulator:
         self.env = EnvState(obstacles, self.config("resolution", 10.0))   # env = environment 11/11
 
         # initiate agents
-        self.peds = PedState(state, groups, self.config) # 11/14
+        self.peds = PedState(state, goals, groups, self.config) # 11/14
 
         # construct forces
         self.forces = self.make_forces(self.config)

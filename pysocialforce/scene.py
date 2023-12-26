@@ -11,7 +11,7 @@ from pysocialforce.utils import stateutils, logger
 class PedState:
     """Tracks the state of pedstrains and social groups"""
 
-    def __init__(self, state, groups, config):
+    def __init__(self, state, goals, groups, config):
         logger.info("Pedstate init")
         self.default_tau = config("tau", 0.5) #dude
         self.step_width = config("step_width", 0.4)
@@ -24,11 +24,11 @@ class PedState:
         self.ped_states = []
         self.group_states = []
 
-        self.update(state, groups)
+        self.update(state, goals, groups)
 
-    def update(self, state, groups):
+    def update(self, state, goal, groups):
         logger.info("Pedstate updating")
-        self.state = state
+        self.state = state, goal
         self.groups = groups
 
     @property
@@ -36,10 +36,20 @@ class PedState:
         return self._state
 
     @state.setter
-    def state(self, state):
+    def state(self, state, goal):
         # when someone type self(pedstate).state=...
         tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents (1stDim of state(ped init state list))
-        if state.shape[1] < 10: #num of elements in each agents < 10
+        self._state = state
+        #for n in range(state.shape[0]):
+        #    self._state[n] = np.append(state[n], goal[n, 0])
+        self._state = np.concatenate(
+                (
+                state, np.reshape(
+                    goal[:, 0], (state.shape[0], 3)
+                    )
+                )
+            , axis = -1)
+        if state.shape[1] < 8: #num of elements in each agents < 10  #dude
             self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #add deftau in back of each agents (no.7)
         else:
             self._state = state
@@ -63,14 +73,14 @@ class PedState:
     def goal(self) -> np.ndarray:
         return self.state[:, 4:6]
     
-    def goal_t(self) -> np.ndarray:
+    def t(self) -> np.ndarray:
         return np.concatenate(self.state[:, 6:7], axis=None)
     
-    def goal2(self) -> np.ndarray:
-        return self.state[:, 7:9]
+    #def goal2(self) -> np.ndarray:
+    #    return self.state[:, 7:9]
 
     def tau(self):
-        return self.state[:, 9:10]
+        return self.state[:, 7:8]
 
     def speeds(self):
         """Return the speeds corresponding to a given state."""
@@ -86,12 +96,12 @@ class PedState:
         logger.debug("unmod desired vel :")
         logger.debug(desired_velocity)
         
-        arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() == 0) #may fix turbo
-        arrived_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.goal_t() > 0)
+        arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.t() == 0) #may fix turbo
+        arrived_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.t() > 0)
         logger.debug("agents dist tar")
         logger.debug(stateutils.desired_directions(self.state)[1])
         logger.debug("t:")
-        logger.debug(self.goal_t())
+        logger.debug(self.t())
         #print(arrived_mask)
         #print(self.state[:, 6:7][arrived_mask])
         #print(np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
@@ -102,6 +112,8 @@ class PedState:
         logger.debug("moded desired vel :")
         logger.debug(desired_velocity)
         self.goal()[arrivedf_mask] = self.goal2()[arrivedf_mask]###dont (need) to change pos
+        
+        #aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         #if (stateutils.desired_directions(self.state)[1] < 0.5) : get fucked
         #    self.state[:, 0:2] = self.state[:, 4:6] ###dont change this
         #    self.state[:, 4:6] = self.state[:, 6:8]
