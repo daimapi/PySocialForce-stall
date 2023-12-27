@@ -23,12 +23,22 @@ class PedState:
 
         self.ped_states = []
         self.group_states = []
+        self.goals = goals
+        
+        state = np.concatenate(
+                (
+                state, np.reshape(
+                    goals[:, 0], (state.shape[0], 3)
+                    )
+                )
+            , axis = -1)
+        state = np.concatenate((state, np.expand_dims(np.ones(state.shape[0]), -1)), axis=-1) #add goaln
 
-        self.update(state, goals, groups)
+        self.update(state, groups)
 
-    def update(self, state, goal, groups):
+    def update(self, state, groups):
         logger.info("Pedstate updating")
-        self.state = state, goal
+        self.state = state
         self.groups = groups
 
     @property
@@ -36,23 +46,16 @@ class PedState:
         return self._state
 
     @state.setter
-    def state(self, state, goal):
+    def state(self, state):
         # when someone type self(pedstate).state=...
         tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents (1stDim of state(ped init state list))
-        self._state = state
         #for n in range(state.shape[0]):
         #    self._state[n] = np.append(state[n], goal[n, 0])
-        self._state = np.concatenate(
-                (
-                state, np.reshape(
-                    goal[:, 0], (state.shape[0], 3)
-                    )
-                )
-            , axis = -1)
-        if state.shape[1] < 8: #num of elements in each agents < 10  #dude
+        if state.shape[1] < 10: #num of elements in each agents < 10
             self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #add deftau in back of each agents (no.7)
         else:
             self._state = state
+
         if self.initial_speeds is None:
             self.initial_speeds = self.speeds()
         self.max_speeds = self.max_speed_multiplier * self.initial_speeds
@@ -76,11 +79,19 @@ class PedState:
     def t(self) -> np.ndarray:
         return np.concatenate(self.state[:, 6:7], axis=None)
     
-    #def goal2(self) -> np.ndarray:
-    #    return self.state[:, 7:9]
+    def goaln(self, n:int) -> np.ndarray:
+        n = n - 1
+        return self.goals[:, n, 0:2]
+    
+    def goaltn(self, n:int) -> np.ndarray:
+        n = n - 1
+        return self.goals[:, n, 2]
+    
+    def num(self) -> np.ndarray:
+        return self.state[:, 7:8]
 
     def tau(self):
-        return self.state[:, 7:8]
+        return self.state[:, 8:9]
 
     def speeds(self):
         """Return the speeds corresponding to a given state."""
@@ -111,9 +122,12 @@ class PedState:
         self.state[:, 6:7][arrived_mask] = np.subtract(self.state[:, 6:7][arrived_mask], np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
         logger.debug("moded desired vel :")
         logger.debug(desired_velocity)
-        self.goal()[arrivedf_mask] = self.goal2()[arrivedf_mask]###dont (need) to change pos
+        for n in self.num()[arrivedf_mask] :
+            self.goal()[arrivedf_mask] = self.goaln(n)[arrivedf_mask]###dont (need) to change pos
+            self.t()[arrivedf_mask] = self.goaltn(n)[arrivedf_mask] #dude
         
-        #aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        
+
         #if (stateutils.desired_directions(self.state)[1] < 0.5) : get fucked
         #    self.state[:, 0:2] = self.state[:, 4:6] ###dont change this
         #    self.state[:, 4:6] = self.state[:, 6:8]
