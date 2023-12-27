@@ -50,12 +50,21 @@ sus = np.concatenate(
                     )
                 )
             , axis = -1)
-print(initial_goals[:, 1, 0:2]) #[:, n, pos(x,y)]
+#print(initial_goals[:, 1, 0:2]) #[:, n, pos(x,y)]
 #[[ 0.  10. ]
 # [ 0.5 10. ]
 # [ 0.   0. ]
 # [ 1.   0. ]
 # [ 2.   0. ]
 # [ 3.   0. ]]
-print(initial_goals[:, 1, 2]) #[:, n, t]
+#print(initial_goals[:, 1, 2]) #[:, n, t]
 #[2. 3. 1. 1. 1. 1.]
+print(sus)
+sus2 = np.concatenate((sus, np.expand_dims(np.ones(sus.shape[0]), -1)), axis=-1)
+print(sus2)
+arrfmask = np.array([True, True, False, True, False, False])
+print(sus2[:, 7:8][arrfmask])
+for n in sus2[:, 7:8][arrfmask]:
+    n = int(n.tolist()[0])
+    print(type(n))
+print(initial_goals.shape[1])

@@ -89,6 +89,9 @@ class PedState:
     
     def num(self) -> np.ndarray:
         return self.state[:, 7:8]
+    
+    def numlenght(self) -> int:
+        return self.goals.shape[1]
 
     def tau(self):
         return self.state[:, 8:9]
@@ -123,8 +126,13 @@ class PedState:
         logger.debug("moded desired vel :")
         logger.debug(desired_velocity)
         for n in self.num()[arrivedf_mask] :
-            self.goal()[arrivedf_mask] = self.goaln(n)[arrivedf_mask]###dont (need) to change pos
-            self.t()[arrivedf_mask] = self.goaltn(n)[arrivedf_mask] #dude
+            n = int(n.tolist()[0])
+            if n >= self.numlenght() :
+                
+            else :
+                self.goal()[arrivedf_mask] = self.goaln(n + 1)[arrivedf_mask]###dont (need) to change pos
+                self.t()[arrivedf_mask] = self.goaltn(n + 1)[arrivedf_mask] #dude
+                self.num()[arrivedf_mask] = np.sum(self.state[:, 6:7][arrived_mask], np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
         
         
 
