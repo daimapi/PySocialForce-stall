@@ -51,7 +51,7 @@ class PedState:
         tau = self.default_tau * np.ones(state.shape[0]) #tau = array([deftau,deftau,deftau...,deftau]) amount of deftaus depends on the number of agents (1stDim of state(ped init state list))
         #for n in range(state.shape[0]):
         #    self._state[n] = np.append(state[n], goal[n, 0])
-        if state.shape[1] < 10: #num of elements in each agents < 10
+        if state.shape[1] < 9: #num of elements in each agents < 10
             self._state = np.concatenate((state, np.expand_dims(tau, -1)), axis=-1) #add deftau in back of each agents (no.7)
         else:
             self._state = state
@@ -60,6 +60,7 @@ class PedState:
             self.initial_speeds = self.speeds()
         self.max_speeds = self.max_speed_multiplier * self.initial_speeds
         self.ped_states.append(self._state.copy())
+        logger.debug(f"self._state.copy():\n {repr(self._state.copy())}")
 
     def get_states(self):
         return np.stack(self.ped_states), self.group_states
@@ -77,7 +78,7 @@ class PedState:
         return self.state[:, 4:6]
     
     def t(self) -> np.ndarray:
-        return np.concatenate(self.state[:, 6:7], axis=None)
+        return self.state[:, 6]#np.concatenate(self.state[:, 6:7], axis=None) #1d
     
     def goaln(self, n:int) -> np.ndarray:
         n = n - 1
@@ -85,10 +86,10 @@ class PedState:
     
     def goaltn(self, n:int) -> np.ndarray:
         n = n - 1
-        return self.goals[:, n, 2]
+        return self.goals[:, n, 2:3]
     
     def num(self) -> np.ndarray:
-        return self.state[:, 7:8]
+        return self.state[:, 7:8] #2d
     
     def numlenght(self) -> int:
         return self.goals.shape[1]
@@ -107,32 +108,41 @@ class PedState:
         desired_velocity = self.vel() + self.step_width * force
         desired_velocity = self.capped_velocity(desired_velocity, self.max_speeds)
         ###stop when arrived
-        logger.debug("unmod desired vel :")
-        logger.debug(desired_velocity)
+        #logger.debug("unmod desired vel :")
+        #logger.debug(desired_velocity)
         
         arrivedf_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.t() == 0) #may fix turbo
         arrived_mask = np.logical_and(stateutils.desired_directions(self.state)[1] < 0.5 , self.t() > 0)
-        logger.debug("agents dist tar")
-        logger.debug(stateutils.desired_directions(self.state)[1])
-        logger.debug("t:")
-        logger.debug(self.t())
+        #logger.debug("agents dist tar")
+        #logger.debug(stateutils.desired_directions(self.state)[1])
+        #logger.debug("t:")
+        #logger.debug(self.t())
         #print(arrived_mask)
         #print(self.state[:, 6:7][arrived_mask])
         #print(np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
         #print(np.shape(self.state[:, 6:7][arrived_mask]))
         desired_velocity[stateutils.desired_directions(self.state)[1] < 0.5] = [0, 0]
         #if (np.shape(self.state[:, 6:7][arrived_mask]) != (0,1)):
-        self.state[:, 6:7][arrived_mask] = np.subtract(self.state[:, 6:7][arrived_mask], np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
-        logger.debug("moded desired vel :")
-        logger.debug(desired_velocity)
+        #self.state[:, 6:7][arrived_mask] = np.subtract(
+        #    self.state[:, 6:7][arrived_mask], np.expand_dims(
+        #        np.ones(
+        #            self.size()
+        #        )[arrived_mask], axis=1
+        #    )
+        #)
+        self.t()[arrived_mask] += -1
+        #logger.debug("moded desired vel :")
+        #logger.debug(desired_velocity)
+        a = 0
         for n in self.num()[arrivedf_mask] :
             n = int(n.tolist()[0])
-            if n >= self.numlenght() :
-                
-            else :
-                self.goal()[arrivedf_mask] = self.goaln(n + 1)[arrivedf_mask]###dont (need) to change pos
-                self.t()[arrivedf_mask] = self.goaltn(n + 1)[arrivedf_mask] #dude
-                self.num()[arrivedf_mask] = np.sum(self.state[:, 6:7][arrived_mask], np.expand_dims(np.ones(self.size())[arrived_mask], axis=1))
+            if n <= self.numlenght() :
+                self.num()[np.where(arrivedf_mask)[0][a]] += 1
+                self.goal()[np.where(arrivedf_mask)[0][a]] = self.goaln(n)[arrivedf_mask][a] ###dont (need) to change pos
+                self.t()[np.where(arrivedf_mask)[0][a]] = self.goaltn(n)[arrivedf_mask][a]
+            else:
+                self.num()[np.where(arrivedf_mask)[0][a]] = 300 #dude
+            a += 1
         
         
 

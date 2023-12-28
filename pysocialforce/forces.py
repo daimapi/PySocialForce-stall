@@ -43,7 +43,7 @@ class Force(ABC):
         """
         raise NotImplementedError
 
-    def get_force(self, debug=True):
+    def get_force(self, debug=False):
         force = self._get_force()
         if debug:
             logger.debug(f"{camel_to_snake(type(self).__name__)}:\n {repr(force)}")
