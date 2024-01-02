@@ -6,17 +6,18 @@ import pysocialforce as psf
 
 if __name__ == "__main__":
     # initial states, each entry is the position, velocity and goal of a pedestrian in the form of 
-    #[px, py, vx, vy, gx, gy, gt, gx2, gy2]
+    #[px, py, vx, vy, pt],
     init_state = np.array(
         [
-            [0.0, 10, -0.5, -0.5],
-            [0.5, 10, -0.5, -0.5],
-            [0.0, 0.0, 0.0, 0.5],
-            [1.0, 0.0, 0.0, 0.5],
-            [2.0, 0.0, 0.0, 0.5],
-            [3.0, 0.0, 0.0, 0.5],
+            [0.0, 10, -0.5, -0.5, 0],
+            [0.5, 10, -0.5, -0.5, 1],
+            [0.0, 0.0, 0.0, 0.5, 5],
+            [1.0, 0.0, 0.0, 0.5, 10],
+            [2.0, 0.0, 0.0, 0.5, 13],
+            [3.0, 0.0, 0.0, 0.5, 17],
         ]
     )
+    #[[g1x,g1y,g1t],[g2x,g2y,g2t]...],
     init_goals = np.array(
         [
             [[0.0, 0.0, 3] , [0.0, 10, 2] , [0.0, 0.0, 3] ],

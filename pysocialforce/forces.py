@@ -34,7 +34,7 @@ class Force(ABC):
             self.factor = self.config("factor", 1.0)
 
         self.scene = scene
-        self.peds = self.scene.peds
+        self.peds = self.scene.ped[np.squeeze(self.scene.num()) > 0] #dude must be a 1d nask
 
     @abstractmethod
     def _get_force(self) -> np.ndarray:

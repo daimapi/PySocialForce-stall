@@ -8,11 +8,11 @@ i have no time making description
 - [x] keep obs in figure
 - [ ] plotting crowd situation
 - [ ] goal stay time (goal1)
-- [ ] multi goal (goal*n)
+- [x] multi goal (goal*n)
 - [ ] plot arrive time
 - [ ] different agents spawn time
 - [ ] agents genernater
-- [ ] input obstacles from bitmap 
+- [ ] input obstacles from bitmap/svg 
 
 
 # PySocialForce
