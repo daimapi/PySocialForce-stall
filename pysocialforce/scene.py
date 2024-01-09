@@ -140,6 +140,7 @@ class PedState:
                 self.num()[np.where(arrivedf_mask)[0][a]] += 1
                 self.goal()[np.where(arrivedf_mask)[0][a]] = self.goaln(n)[arrivedf_mask][a] ###dont (need) to change pos
                 self.t()[np.where(arrivedf_mask)[0][a]] = self.goaltn(n)[arrivedf_mask][a]
+
             else:
                 self.num()[np.where(arrivedf_mask)[0][a]] = -1 #dude
             a += 1
@@ -151,14 +152,14 @@ class PedState:
         #    self.state[:, 4:6] = self.state[:, 6:8]
         ###update state
         next_state = self.state
-        logger.debug("self_state-pos:")
-        logger.debug(next_state[:, 0:2])
+        #logger.debug("self_state-pos:")
+        #logger.debug(next_state[:, 0:2])
         next_state[:, 0:2] += desired_velocity * self.step_width
-        logger.debug("next_state-pos:")
-        logger.debug(next_state[:, 0:2])
+        #logger.debug("next_state-pos:")
+        #logger.debug(next_state[:, 0:2])
         next_state[:, 2:4] = desired_velocity
-        logger.debug("next_state-vel:")
-        logger.debug(next_state[:,2:4])
+        #logger.debug("next_state-vel:")
+        #logger.debug(next_state[:,2:4])
         next_groups = self.groups
         if groups is not None:
             next_groups = groups 

@@ -1,5 +1,6 @@
 """Utility functions for plots and animations."""
-
+#https://stackoverflow.com/questions/24597236/changing-background-image-on-a-plot
+#excel to numpy array
 from contextlib import contextmanager
 
 import numpy as np

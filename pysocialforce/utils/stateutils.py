@@ -116,3 +116,7 @@ def minmax(vecs: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.nda
     x_max = np.max(vecs[:, 0])
     y_max = np.max(vecs[:, 1])
     return (x_min, y_min, x_max, y_max)
+
+@njit
+def selecting(state: np.ndarray) -> np.ndarray:
+    return [state[:, 7:8] > 0]

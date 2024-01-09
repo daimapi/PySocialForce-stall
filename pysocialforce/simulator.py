@@ -6,6 +6,7 @@
 
 See Helbing and Molnár 1998 and Moussaïd et al. 2010
 """
+import csv
 from pysocialforce.utils import DefaultConfig, logger
 from pysocialforce.scene import PedState, EnvState
 from pysocialforce import forces
@@ -15,7 +16,7 @@ class Simulator:
 
     ...
 
-    Attributes (定義)
+    Attributes
     ----------
     state : np.ndarray [n, 6] or [n, 7]
        Each entry represents a pedestrian state, (x, y, v_x, v_y, d_x, d_y, d2_x, d2_y, [tau])
@@ -51,7 +52,7 @@ class Simulator:
         self.env = EnvState(obstacles, self.config("resolution", 10.0))   # env = environment 11/11
 
         # initiate agents
-        self.peds = PedState(state, goals, groups, self.config) # 11/14
+        self.peds = PedState(state, goals, groups, self.config) 
 
         # construct forces
         self.forces = self.make_forces(self.config)
@@ -111,4 +112,8 @@ class Simulator:
             logger.info(f"steping:{_}")
             self.step_once()
         logger.info('finish caculation')
+        logger.info(self.get_states())
+        with open('state.csv', 'w+', newline='') as csvfile:
+            filewriter = csv.writer(csvfile)
+            filewriter.writerows(self.get_states())
         return self
