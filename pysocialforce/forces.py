@@ -27,14 +27,18 @@ class Force(ABC):
 
     def init(self, scene, config):
         """Load config and scene"""
-        logger.info("loding scene into Force")
+        logger.info("loding scene into Force") #not once a step
         # load the sub field corresponding to the force name from global confgi file
         self.config = config.sub_config(camel_to_snake(type(self).__name__))
         if self.config:
             self.factor = self.config("factor", 1.0)
 
         self.scene = scene
-        self.peds = self.scene.ped[np.squeeze(self.scene.num()) > 0] #dude must be a 1d nask
+        print(type(np.squeeze(self.scene.peds.num())[0]))
+        print([np.squeeze(self.scene.peds.num()) > 0])
+        print(type(scene.peds))
+        print(type(scene.peds))
+        self.peds = self.scene.peds #dude must be a 1d nask
 
     @abstractmethod
     def _get_force(self) -> np.ndarray:
@@ -44,6 +48,9 @@ class Force(ABC):
         raise NotImplementedError
 
     def get_force(self, debug=False):
+        print(self.peds)
+        self.peds = self.peds[np.squeeze(self.peds.num()) > 0]
+        
         force = self._get_force()
         if debug:
             logger.debug(f"{camel_to_snake(type(self).__name__)}:\n {repr(force)}")
