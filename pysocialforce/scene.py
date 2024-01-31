@@ -26,8 +26,11 @@ class PedState:
         self.goals = goals
         
         #state = np.concatenate((state, np.reshape(goals[:, 0], (state.shape[0], 3))), axis = -1)
-        state = np.insert(state, [4, 5], state[:, 0:2], axis=1)
+        state = np.insert(state, 4, state[:, 0], axis=1)
+        state = np.insert(state, 5, state[:, 1], axis=1)
         state = np.concatenate((state, np.expand_dims(np.zeros(state.shape[0]), -1)), axis=-1) #add goaln
+        logger.info("among us")
+        logger.info(state)
         #input  [px, py, vx, vy, pt]
         #mask1  [px, py]
         #append [px, py, vx, vy, px, py, pt]
@@ -136,7 +139,7 @@ class PedState:
         a = 0
         for n in self.num()[arrivedf_mask] :
             n = int(n.tolist()[0])
-            if n <= self.numlenght() and n > 0 :
+            if n <= self.numlenght() and n >= 0 :
                 self.num()[np.where(arrivedf_mask)[0][a]] += 1
                 self.goal()[np.where(arrivedf_mask)[0][a]] = self.goaln(n)[arrivedf_mask][a] ###dont (need) to change pos
                 self.t()[np.where(arrivedf_mask)[0][a]] = self.goaltn(n)[arrivedf_mask][a]

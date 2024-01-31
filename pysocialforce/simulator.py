@@ -6,6 +6,7 @@
 
 See Helbing and Molnár 1998 and Moussaïd et al. 2010
 """
+import numpy as np
 import csv
 from pysocialforce.utils import DefaultConfig, logger
 from pysocialforce.scene import PedState, EnvState
@@ -80,7 +81,7 @@ class Simulator:
         for force in force_list:
             force.init(self, force_configs)  # more details in config.py
         
-        logger.info("done force:")
+        logger.info("done force init:")
         #logger.info(force_list)
 
         return force_list
@@ -88,7 +89,29 @@ class Simulator:
     def compute_forces(self):
         """compute forces"""
         logger.info("start compute_forces --> get_force and sum up all force")
-        return sum(map(lambda x: x.get_force(), self.forces))
+        m = np.squeeze(self.peds.num()) > 0
+        logger.info("m: ")
+        logger.info(m)
+        force = map(lambda x: x.get_force(), self.forces)
+        if (m.sum() == 0):
+            return np.resize([0],(self.peds.size(),2))
+        force = sum(force)
+        
+        ans = np.zeros((m.shape[0],2))
+        for a in range(m.shape[0]):
+            if m[a]:
+                ans[a] = force[0]
+                force = np.delete(force, 0, 0)
+        print(ans)
+        #m = np.squeeze(self.peds.num()) > 0##############調回全長
+        #
+        #ans = np.zeros((m.shape[0],force.shape[0]))
+        #force = np.rot90(force,3)
+        #for a in range(m.shape[0]):
+        #    if m[a]:
+        #        ans[a] = force[0]
+        #        force = np.delete(force, 0, 0)
+        return ans#np.rot90(ans)
 
     def get_states(self):
         """Expose whole state"""
