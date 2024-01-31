@@ -7,10 +7,10 @@ i have no time making description
 - [x] multi goal turbo problem
 - [x] keep obs in figure
 - [ ] plotting crowd situation
-- [ ] goal stay time (goal1)
+- [x] goal stay time (goal1)
 - [x] multi goal (goal*n)
 - [ ] plot arrive time
-- [ ] different agents spawn time
+- [x] different agents spawn time
 - [ ] agents genernater
 - [ ] input obstacles from bitmap/svg 
 
