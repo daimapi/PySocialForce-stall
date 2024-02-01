@@ -90,8 +90,8 @@ class Simulator:
         """compute forces"""
         logger.info("start compute_forces --> get_force and sum up all force")
         m = np.squeeze(self.peds.num()) > 0
-        logger.info("m: ")
-        logger.info(m)
+        logger.debug("m: ")
+        logger.debug(m)
         force = map(lambda x: x.get_force(), self.forces)
         if (m.sum() == 0):
             return np.resize([0],(self.peds.size(),2))
@@ -102,7 +102,8 @@ class Simulator:
             if m[a]:
                 ans[a] = force[0]
                 force = np.delete(force, 0, 0)
-        print(ans)
+        logger.debug("force:")
+        logger.debug(ans)
         #m = np.squeeze(self.peds.num()) > 0##############調回全長
         #
         #ans = np.zeros((m.shape[0],force.shape[0]))
@@ -126,7 +127,7 @@ class Simulator:
 
     def step_once(self):
         """step once"""
-        logger.info("step once")
+        logger.debug("step once")
         self.peds.step(self.compute_forces())
 
     def step(self, n=1):
@@ -135,8 +136,13 @@ class Simulator:
             logger.info(f"steping:{_}")
             self.step_once()
         logger.info('finish caculation')
-        logger.info(self.get_states())
+
         with open('state.csv', 'w+', newline='') as csvfile:
             filewriter = csv.writer(csvfile)
-            filewriter.writerows(self.get_states())
+            for row in self.peds.get_pure_state():
+                for peo in row:
+                    filewriter.writerow(peo)
+                    #for eachsta in peo:
+                        #filewriter.writerow(eachsta)
+
         return self

@@ -27,7 +27,7 @@ class Force(ABC):
 
     def init(self, scene, config):
         """Load config and scene"""
-        logger.info("loding scene into Force") #not once a step
+        logger.debug("loding scene into Force") #not once a step
         # load the sub field corresponding to the force name from global confgi file
         self.config = config.sub_config(camel_to_snake(type(self).__name__))
         if self.config:
@@ -52,7 +52,7 @@ class Force(ABC):
         #print(m)
         #if force.shape == (0,) :
         #    force = np.array([[],[],[],[],[],[],[],[],[],[]])
-        print("---------------------")
+        #print("---------------------")
 #
         #ans = np.zeros((m.shape[0],force.shape[0]))
         #print(force)
@@ -85,7 +85,6 @@ class GoalAttractiveForce(Force):
                 - self.peds.vel()[m]
             )
         )
-        logger.info("F0 * self.factor")
         return F0 * self.factor
 
 
@@ -276,7 +275,6 @@ class DesiredForce(Force):
 
     def _get_force(self):
         m = np.squeeze(self.peds.num()) > 0
-        print(m)
         if (m.sum() == 0):
             return []
         relexation_time = self.config("relaxation_time", 0.5)
@@ -340,7 +338,7 @@ class SocialForce(Force):
 
         force = force_velocity + force_angle  # n*(n-1) x 2
         force = np.sum(force.reshape((m.sum() , -1, 2)), axis=1)
-        logger.info("social force gets calculated")
+        logger.debug("social force gets calculated")
         return force * self.factor
 
 #dude

@@ -67,6 +67,9 @@ class PedState:
 
     def get_states(self):
         return np.stack(self.ped_states), self.group_states
+    
+    def get_pure_state(self):
+        return np.stack(self.ped_states)
 
     def size(self) -> int:
         return self.state.shape[0]
