@@ -192,7 +192,7 @@ class SceneVisualizer:
         if self.human_actors:
             for i, human in enumerate(self.human_actors):
                 human.center = current_state[i, :2]
-                human.set_radius(0.2)
+                human.set_radius(0.3) #default 0.2
                 # human.set_radius(radius[i])
         else:
             self.human_actors = [
@@ -227,7 +227,7 @@ class SceneVisualizer:
 
     def plot_obstacles(self):
         for s in self.scene.get_obstacles():
-            self.ax.plot(s[:, 0], s[:, 1], "-o", color="black", markersize=2.5)
+            self.ax.plot(s[:, 0], s[:, 1], "-o", color="black", markersize=0.5) #default 2.5
 
     def animation_init(self):
         self.plot_obstacles()

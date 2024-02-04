@@ -89,7 +89,7 @@ class Simulator:
     def compute_forces(self):
         """compute forces"""
         logger.info("start compute_forces --> get_force and sum up all force")
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         logger.debug("m: ")
         logger.debug(m)
         force = map(lambda x: x.get_force(), self.forces)
@@ -104,7 +104,7 @@ class Simulator:
                 force = np.delete(force, 0, 0)
         logger.debug("force:")
         logger.debug(ans)
-        #m = np.squeeze(self.peds.num()) > 0##############調回全長
+        #m = np.squeeze(self.peds.num(), axis=-1) > 0##############調回全長
         #
         #ans = np.zeros((m.shape[0],force.shape[0]))
         #force = np.rot90(force,3)

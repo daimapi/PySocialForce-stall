@@ -48,7 +48,7 @@ class Force(ABC):
         
 
         #force = np.array(self._get_force())
-        #m = np.squeeze(self.peds.num()) > 0
+        #m = np.squeeze(self.peds.num(), axis=-1) > 0
         #print(m)
         #if force.shape == (0,) :
         #    force = np.array([[],[],[],[],[],[],[],[],[],[]])
@@ -76,7 +76,7 @@ class GoalAttractiveForce(Force):
     """accelerate to desired velocity"""
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         F0 = (
             1.0
             / self.peds.tau()[m]
@@ -92,7 +92,7 @@ class PedRepulsiveForce(Force):
     """Ped to ped repulsive force"""
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         potential_func = PedPedPotential(
             self.peds.step_width[m], v0=self.config("v0"), sigma=self.config("sigma"),
         )
@@ -108,9 +108,9 @@ class SpaceRepulsiveForce(Force):
     """obstacles to ped repulsive force"""
 
     def _get_force(self):#dude
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if self.scene.get_obstacles() is None:
-            F_aB = np.zeros((self.peds.size()- m.sum(), 0, 2))
+            F_aB = np.zeros((m.sum(), 0, 2))
         else:
             potential_func = PedSpacePotential(
                 self.scene.get_obstacles(), u0=self.config("u0"), r=self.config("r")
@@ -123,19 +123,19 @@ class GroupCoherenceForce(Force): #unmaintained
     """Group coherence force, paper version (unmaintained)"""
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
-        forces = np.zeros((self.peds.size() - m.sum(), 2))
-        if self.peds.has_group():
-            for group in self.peds.groups:
-                threshold = (len(group) - 1) / 2
-                member_pos = self.peds.pos()[group, :]
-                com = stateutils.center_of_mass(member_pos)
-                force_vec = com - member_pos
-                vectors, norms = stateutils.normalize(force_vec)
-                vectors[norms < threshold] = [0, 0]
-                forces[group, :] += vectors
+        forces = np.zeros((m.sum(), 2))
+        #if self.peds.has_group():
+        #    for group in self.peds.groups:
+        #        threshold = (len(group) - 1) / 2
+        #        member_pos = self.peds.pos()[group, :]
+        #        com = stateutils.center_of_mass(member_pos)
+        #        force_vec = com - member_pos
+        #        vectors, norms = stateutils.normalize(force_vec)
+        #        vectors[norms < threshold] = [0, 0]
+        #        forces[group, :] += vectors
         return forces * self.factor
 
 
@@ -143,7 +143,7 @@ class GroupCoherenceForceAlt(Force):
     """ Alternative group coherence force as specified in pedsim_ros (unmaintained)"""
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
         forces = np.zeros((m.sum() , 2))
@@ -163,7 +163,7 @@ class GroupRepulsiveForce(Force):
     """Group repulsive force (unmaintained)"""
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
         forces = np.zeros((m.sum() , 2))
@@ -185,7 +185,7 @@ class GroupGazeForce(Force):
     """Group gaze force"""
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
         forces = np.zeros((m.sum() , 2))
@@ -227,7 +227,7 @@ class GroupGazeForceAlt(Force):
     """Group gaze force"""
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
         forces = np.zeros((m.sum() , 2))
@@ -274,7 +274,7 @@ class DesiredForce(Force):
     """
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
         relexation_time = self.config("relaxation_time", 0.5)
@@ -304,7 +304,7 @@ class SocialForce(Force):
     """
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
         lambda_importance = self.config("lambda_importance", 2.0)
@@ -349,7 +349,7 @@ class ObstacleForce(Force):
     """
 
     def _get_force(self):
-        m = np.squeeze(self.peds.num()) > 0
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
         if (m.sum() == 0):
             return []
         sigma = self.config("sigma", 0.2)

@@ -29,9 +29,27 @@ doc.unlink()
 #print(obs)
 #print(obs.shape)
 ans = []
+c=0
 for _ in list(obs):
     item = []
     for i in _:
         item.append(i)
     ans.append(item)
-#print(ans)
+    c = c + 1
+print(c)
+    
+init_state = np.array(
+    [
+        [0.0, 10, -0.5, -0.5, 0],
+        [0.5, 10, -0.5, -0.5, 1],
+        [0.0, 0.0, 0.0, 0.5, 5],
+        #[1.0, 0.0, 0.0, 0.5, 10],
+        #[2.0, 0.0, 0.0, 0.5, 13],
+        #[3.0, 0.0, 0.0, 0.5, 17],
+    ]
+)
+n = [[0]]
+for _ in range(init_state.shape[0]-1):
+    _ = _ + 1
+    n.append([_])
+print(n)
