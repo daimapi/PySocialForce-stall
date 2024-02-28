@@ -1,17 +1,14 @@
-"""Simulator"""
-
 # coding=utf-8
-
+"""Simulator"""
+from pysocialforce.utils import DefaultConfig, logger, stateutils
+from pysocialforce.scene import PedState, EnvState, Pathstate
+from pysocialforce import forces
+import numpy as np
+import csv
 """Synthetic pedestrian behavior with social groups simulation according to the Extended Social Force model.
 
 See Helbing and Molnár 1998 and Moussaïd et al. 2010
 """
-import numpy as np
-import csv
-from pysocialforce.utils import DefaultConfig, logger
-from pysocialforce.scene import PedState, EnvState
-from pysocialforce import forces
-
 class Simulator:
     """Simulate social force model.
 
@@ -40,7 +37,7 @@ class Simulator:
         Make one step
     """
 
-    def __init__(self, state, goals, groups=None, obstacles=None, config_file=None):
+    def __init__(self, state, goals, paths=None , groups=None, obstacles=None, config_file=None):
         
         logger.info("simulator init")
         self.config = DefaultConfig()
@@ -57,6 +54,10 @@ class Simulator:
 
         # construct forces
         self.forces = self.make_forces(self.config)
+
+        #
+        self.path = Pathstate(paths)
+        
         logger.info("simulator end init")
 
     def make_forces(self, force_configs):
@@ -93,6 +94,7 @@ class Simulator:
         logger.debug("m: ")
         logger.debug(m)
         force = map(lambda x: x.get_force(), self.forces)
+        #print(m.sum())
         if (m.sum() == 0):
             return np.resize([0],(self.peds.size(),2))
         force = sum(force)
@@ -129,6 +131,7 @@ class Simulator:
         """step once"""
         logger.debug("step once")
         self.peds.step(self.compute_forces())
+
 
     def step(self, n=1):
         """Step n time"""

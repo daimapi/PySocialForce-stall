@@ -176,6 +176,7 @@ class PedState:
 
     def desired_directions(self):
         return stateutils.desired_directions(self.state)[0]
+    
 
     @staticmethod
     def capped_velocity(desired_velocity, max_velocity):
@@ -239,3 +240,181 @@ class EnvState:
                     )
                 ) #turn ([1,4],[2,5],[3,6]) into [[1,4],[2,5],[3,6]]
                 self._obstacles.append(line) #add this obs-(a straight line)([[1,4],[2,5],[3,6]]) to Envstate.obstacles
+
+class Pathstate:
+    """Path of the dijkstra alg"""
+
+    def __init__(self, paths):
+        self.dist = []
+        self.area = []
+        self.coord = []
+        self.wide = []
+        if paths is None:
+            self._path = None
+        else:
+            for layern, wide, path in paths:
+                vectors = path[:, 0:2] - path[:, 2:4]
+                cur_d = stateutils.normalize(vectors)[1]
+                self.dist.append(cur_d)
+                self.area.append(cur_d* wide)
+                self.coord.append(path)
+                self.wide.append(np.ones(path.shape[0])* wide)
+            self.dist = np.concatenate(self.dist, axis = None)
+            self.area = np.concatenate(self.area, axis = None)
+            self.coord = np.concatenate(self.coord)
+            self.wide = np.concatenate(self.wide)
+            self.r_vec = stateutils.perpend(self.coord[:, 0:2] - self.coord[:, 2:4])
+            self.r_vec *= np.expand_dims(self.wide, axis=1)
+            self.range = np.copy(self.coord)
+            self.range[:,0:2] = self.range[:,0:2] + self.r_vec
+            self.range[:,2:4] = self.range[:,2:4] + self.r_vec
+            self.range = np.concatenate((self.range, self.coord[:,2:4] - self.r_vec), axis=-1)
+            self.range = np.concatenate((self.range, self.coord[:,0:2] - self.r_vec), axis=-1)
+        #listt = []
+        #for _ in goals.tolist():
+        #    for __ in _:
+        #        print([__[0],__[1]])
+        #        c = 0
+        #        for trys in listt:
+        #            if trys == [__[0],__[1]]: c += 1
+        #        if c == 0:
+        #            listt.append([__[0],__[1]])
+        #self.goal = np.array(listt)
+        #self.goal = 
+
+    @property
+    def path(self):
+        return self._path
+    
+    @path.setter
+    def path(self, paths):
+        self._path = paths
+
+    #def node_desired_directions(self, state):
+    #    return stateutils.node_desired_directions(state)[0]
+    
+    def dense(self, post, ranges):
+        boool = stateutils.find(post, ranges)
+        return stateutils.dense(boool, self.area)
+    
+    def dijkstra(self, pest, goal):
+        boool = np.copy(stateutils.find(pest, self.range))
+        dense = np.copy(stateutils.dense(boool, self.area))
+        r_vec = np.copy(self.r_vec)
+        coord = np.copy(self.coord)
+        rangee = np.copy(self.range)
+        area = np.copy(self.area)
+        length = np.copy(self.dist)
+        factor = [0.5,0.5]
+
+        weight = dense*factor[0] + length*factor[1]
+        d = {}
+        c = 0
+        for p1 in coord[:,0:2]:
+            p2 = coord[c, 2:4]
+            if d.get(str(p1)) is None:
+                d[str(p1)] = {}
+            if d.get(str(p2)) is None:
+                d[str(p2)] = {}
+            d[str(p1)].update({str(p2) : weight[c]})
+            d[str(p2)].update({str(p1) : weight[c]})
+            c += 1
+        start_point = stateutils.render_range(boool, pest, coord)
+        end_point = stateutils.render_range(stateutils.find(goal, rangee), goal, coord)
+        vgoal = []
+        for peo in range(pest.shape[0]):
+            s = start_point[str(peo)]
+            e = end_point[str(peo)]
+            pos = pest[peo]
+            gol = goal[peo]
+            #print(pos)
+            #print(gol)
+            if isinstance(s,np.ndarray) and isinstance(e,np.ndarray):
+                a__ = stateutils.dijkstra(d, str(s), str(e))
+                if len(a__[1]) == 1 :
+                    vgoal.append(str(gol))
+                else :
+                    vgoal.append(stateutils.dijkstra(d, str(s), str(e))[1][1])
+
+
+            elif len(s) == 2 and len(e) == 1:
+                tmp = []
+                a0_ = stateutils.dijkstra(d, str(s[0]), str(e))
+                a1_ = stateutils.dijkstra(d, str(s[1]), str(e))
+                s_prefweight = stateutils.weight_single(s, pos, area, coord, length, pest, r_vec)
+                s_weight = (s_prefweight[0]*factor[0] + s_prefweight[1]*factor[1], s_prefweight[2]*factor[0] + s_prefweight[3]*factor[1])
+                #print("a0_",a0_)
+                #print("a1_",a1_)
+                tmp.append(a0_[0] + s_weight[0])
+                tmp.append(a1_[0] + s_weight[1])
+                tmax = min(tmp)
+                ans = stateutils.dijkstra(d, str(s[tmp.index(tmax)]), str(e))
+                if len(ans[1]) == 1 :
+                    vgoal.append(str(gol))
+                else :
+                    vgoal.append(ans[1][0])
+
+
+            elif isinstance(s,np.ndarray) and isinstance(e,list):
+                tmp = []
+                a_0 = stateutils.dijkstra(d, str(s), str(e[0]))
+                a_1 = stateutils.dijkstra(d, str(s), str(e[1]))
+                e_prefweight = stateutils.weight_single(e, pos, area, coord, length, pest, r_vec)
+                e_weight = (e_prefweight[0]*factor[0] + e_prefweight[1]*factor[1], e_prefweight[2]*factor[0] + e_prefweight[3]*factor[1])
+                #print("a_0",a_0)
+                #print("a_1",a_1)
+                tmp.append(a_0[0] + e_weight[0])
+                tmp.append(a_1[0] + e_weight[1])
+                tmax = min(tmp)
+                ans = stateutils.dijkstra(d, str(s), str(e[tmp.index(tmax)]))
+                if len(ans[1]) == 1 :
+                    vgoal.append(str(gol))
+                else :
+                    vgoal.append(ans[1][1])
+
+
+            elif isinstance(s,list) and isinstance(e,list):
+                tmp = []
+                #print(type(s))
+                #print(type(e))
+                #print(d[str(s[0])])
+                #print(d[str(s[1])])
+                #print(d[str(e[0])])
+                #print(d[str(e[1])])
+                s_prefweight = stateutils.weight_single(s, pos, self.area, coord, length, pest, r_vec)
+                e_prefweight = stateutils.weight_single(e, pos, self.area, coord, length, pest, r_vec)
+                s_weight = (s_prefweight[0]*factor[0] + s_prefweight[1]*factor[1], s_prefweight[2]*factor[0] + s_prefweight[3]*factor[1])
+                e_weight = (e_prefweight[0]*factor[0] + e_prefweight[1]*factor[1], e_prefweight[2]*factor[0] + e_prefweight[3]*factor[1])
+                a00 = stateutils.dijkstra(d, str(s[0]), str(e[0]))
+                a10 = stateutils.dijkstra(d, str(s[1]), str(e[0]))
+                a01 = stateutils.dijkstra(d, str(s[0]), str(e[1]))
+                a11 = stateutils.dijkstra(d, str(s[1]), str(e[1]))
+                #print("a00",a00)
+                #print("a10",a10)
+                #print("a01",a01)
+                #print("a11",a11)
+                tmp.append(a00[0] + s_weight[0] + e_weight[0])
+                tmp.append(a10[0] + s_weight[1] + e_weight[0])
+                tmp.append(a01[0] + s_weight[0] + e_weight[1])
+                tmp.append(a11[0] + s_weight[1] + e_weight[1])
+                tmax = min(tmp)
+                idx1 = 0
+                idx2 = 0
+                if tmp.index(tmax) == 1 : idx1 = 1
+                elif tmp.index(tmax) == 2 : idx2 = 1
+                elif tmp.index(tmax) == 3 : idx2, idx1 = 1, 1
+                ans = stateutils.dijkstra(d, str(s[idx1]), str(e[idx2]))
+                if len(ans[1]) == 1 :
+                    vgoal.append(str(gol))
+                else :
+                    vgoal.append(ans[1][0])
+        #print(vgoal)
+        a = []
+        for _ in vgoal:
+            #print(_.split(' ')[-1])#.split(']')[0])
+            #print([float(_.split(' ')[0].split('[')[1]),float(_.split(' ')[-1].split(']')[0])])
+            a.append([float(_.split(' ')[0].split('[')[1]),float(_.split(' ')[-1].split(']')[0])])
+        #print(np.array(a))
+        
+        return np.array(a)
+

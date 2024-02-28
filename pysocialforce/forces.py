@@ -44,6 +44,11 @@ class Force(ABC):
         raise NotImplementedError
 
     def get_force(self, debug=True):
+        m = np.squeeze(self.peds.num(), axis=-1) > 0
+        if (m.sum() == 0):
+            self.vgoal = None
+        self.vgoal = self.scene.path.dijkstra(self.peds.pos()[m], self.peds.goal()[m])
+        
         force = self._get_force()
         
 
@@ -70,6 +75,7 @@ class Force(ABC):
         #print(force)
         if debug:
             logger.debug(f"{camel_to_snake(type(self).__name__)}:\n {repr(force)}")
+        #print(type(force))
         return force
     
 class GoalAttractiveForce(Force):
@@ -77,11 +83,13 @@ class GoalAttractiveForce(Force):
 
     def _get_force(self):
         m = np.squeeze(self.peds.num(), axis=-1) > 0
+        if (m.sum() == 0):
+            return []
         F0 = (
             1.0
             / self.peds.tau()[m]
             * (
-                np.expand_dims(self.peds.initial_speeds[m], -1) * self.peds.desired_directions()[m]
+                np.expand_dims(self.peds.initial_speeds[m], -1) * stateutils.node_desired_directions(self.peds.pos[m], self.vgoal)
                 - self.peds.vel()[m]
             )
         )
@@ -93,13 +101,15 @@ class PedRepulsiveForce(Force):
 
     def _get_force(self):
         m = np.squeeze(self.peds.num(), axis=-1) > 0
+        if (m.sum() == 0):
+            return []
         potential_func = PedPedPotential(
             self.peds.step_width[m], v0=self.config("v0"), sigma=self.config("sigma"),
         )
         f_ab = -1.0 * potential_func.grad_r_ab(self.peds.state[m])
 
         fov = FieldOfView(phi=self.config("fov_phi"), out_of_view_factor=self.config("fov_factor"),)
-        w = np.expand_dims(fov(self.peds.desired_directions()[m], -f_ab), -1)
+        w = np.expand_dims(fov(stateutils.node_desired_directions(self.peds.pos[m], self.vgoal), -f_ab), -1)
         F_ab = w * f_ab
         return np.sum(F_ab, axis=1) * self.factor
 
@@ -109,6 +119,8 @@ class SpaceRepulsiveForce(Force):
 
     def _get_force(self):#dude
         m = np.squeeze(self.peds.num(), axis=-1) > 0
+        if (m.sum() == 0):
+            return []
         if self.scene.get_obstacles() is None:
             F_aB = np.zeros((m.sum(), 0, 2))
         else:
@@ -281,7 +293,7 @@ class DesiredForce(Force):
         goal_threshold = self.config("goal_threshold", 0.1)
         pos = self.peds.pos()[m]
         vel = self.peds.vel()[m]
-        goal = self.peds.goal()[m]
+        goal = self.vgoal
         direction, dist = stateutils.normalize(goal - pos)
         force = np.zeros((m.sum() , 2))
         force[dist > goal_threshold] = (
